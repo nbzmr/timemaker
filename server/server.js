@@ -14,7 +14,8 @@ const port = process.env.PORT || 3000
 app.use(bodyParser.json())
 
 const auth = (req, res, next) => {
-    const header = req.header('x-auth').toString()
+    const header = req.header('x-auth')
+
     let token
 
     try {
@@ -22,13 +23,15 @@ const auth = (req, res, next) => {
     } catch (err) {
         console.log('err')
     }
-
+    
     if (token) {
         User.find({
-            token: token.token
+            _id: token._id,
+            token: req.header('x-auth')
         })
         .then((data) => {
             if (data.length === 0) {
+                console.log('hiiiiii')
                 return Promise.reject()
             }
 
@@ -54,7 +57,7 @@ app.post('/register', (req, res) => {
 
     user.save()
     .then((data) => {
-        console.log(data)
+        
     })
     .catch(() => {
         console.log('err')
@@ -78,7 +81,7 @@ app.post('/login', (req, res) => {
                 {token : token },
                 {multi:true}, 
                 function(err, numberAffected){ 
-                     console.log(numberAffected)
+
             });
 
             res.send({
@@ -119,10 +122,8 @@ app.post('/record', auth, (req, res) => {
 })
 
 app.post('/removeRecord', auth, (req, res) => {
-    console.log(req.body._id)
     Time.findByIdAndRemove(req.body._id)
     .then((r) => {
-        console.log(r)
         res.send()
     })
     .catch(() => {
